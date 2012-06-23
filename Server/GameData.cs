@@ -1,8 +1,9 @@
 ﻿namespace Server
 {
-    public enum GameData
+    public enum GameData:byte
     {
         ShipData = 0,
-        BulletData = 1
+        BulletData = 1,
+        PlayerDisconected = 2
     }
 }

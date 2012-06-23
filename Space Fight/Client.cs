@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using OpenTK;
 
-namespace Server
+namespace Space_Fight
 {
-    public struct ShipData
+    class Client
     {
-        Vector2 
     }
 }

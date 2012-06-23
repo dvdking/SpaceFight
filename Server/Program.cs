@@ -10,6 +10,8 @@ namespace Server
 {
     internal class Server
     {
+        private List<ConnectedPlayer> ConnectedPlayers; 
+
         private NetServer server;
         private NetPeerConfiguration _configuration;
 
@@ -21,6 +23,8 @@ namespace Server
 
         public Server()
         {
+            ConnectedPlayers = new List<ConnectedPlayer>();
+
             _configuration = new NetPeerConfiguration("space_fight");
             server = new NetServer(_configuration);
 
@@ -44,11 +48,11 @@ namespace Server
 
                             if(status == NetConnectionStatus.Connected)
                             {
-                                //add new player
+                                AddNewPlayer(message.SenderConnection);
                             }
                             else if(status == NetConnectionStatus.Disconnected)
                             {
-                                //delete old player
+                                DeletePlayer(message.SenderConnection);
                             }
                             break;
                         case NetIncomingMessageType.VerboseDebugMessage:
@@ -66,7 +70,6 @@ namespace Server
                                     break;
                             }
                             break;
-
                     }
                 }
             }
@@ -75,8 +78,22 @@ namespace Server
 
         private void AddNewPlayer(NetConnection connection)
         {
+            ConnectedPlayer player = new ConnectedPlayer(connection);
+            ConnectedPlayers.Add(player);
 
+            NetOutgoingMessage outgoingMessage = server.CreateMessage();
+            outgoingMessage.WriteAllFields(player);
+            server.SendMessage(outgoingMessage, player.NetConnection, NetDeliveryMethod.Unreliable);
+        }
 
+        private void DeletePlayer(NetConnection connection)
+        {
+            ConnectedPlayer player = FindPlayer(connection);
+
+            NetOutgoingMessage message = server.CreateMessage();
+            message.Write((byte)GameData.PlayerDisconected);
+            message.Write(player.UID);
+            server.SendToAll(message, NetDeliveryMethod.Unreliable);
         }
 
         private void SendDiscoveryResponse(NetIncomingMessage message)
@@ -84,6 +101,11 @@ namespace Server
             NetOutgoingMessage outgoingMessage = server.CreateMessage();
             outgoingMessage.Write("Server name");
             server.SendDiscoveryResponse(outgoingMessage, message.SenderEndpoint);
+        }
+
+        private ConnectedPlayer FindPlayer(NetConnection connection)
+        {
+            return ConnectedPlayers.FirstOrDefault((player => player.NetConnection == connection));
         }
     }
 }

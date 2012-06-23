@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Lidgren.Network;
 
 namespace Server
 {
@@ -10,9 +11,12 @@ namespace Server
         public int UID;
         public ShipData Data;
 
-        public ConnectedPlayer()
+        public NetConnection NetConnection { get; private set; }
+
+        public ConnectedPlayer(NetConnection netConnection)
         {
             UID = UIDGen.Next();
+            NetConnection = netConnection;
         }
     }
 }
